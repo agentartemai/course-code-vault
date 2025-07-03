@@ -6,65 +6,30 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Download, CheckCircle, FileText, Archive, Play } from "lucide-react";
 
-const chapters = [
-  {
-    id: 1,
-    title: "Foundation Principles",
-    description: "Master the core concepts that will transform your understanding",
-    duration: "45 min",
-    difficulty: "Beginner",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    files: [
-      { name: "Chapter 1 - Workbook.pdf", size: "2.4 MB", type: "pdf" },
-      { name: "Chapter 1 - Templates.zip", size: "1.2 MB", type: "zip" }
-    ]
-  },
-  {
-    id: 2,
-    title: "Advanced Techniques",
-    description: "Deep dive into professional strategies and methodologies",
-    duration: "60 min",
-    difficulty: "Intermediate",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    files: [
-      { name: "Chapter 2 - Advanced Guide.pdf", size: "3.1 MB", type: "pdf" },
-      { name: "Chapter 2 - Case Studies.pdf", size: "4.2 MB", type: "pdf" }
-    ]
-  },
-  {
-    id: 3,
-    title: "Implementation Mastery",
-    description: "Put your knowledge into practice with real-world applications",
-    duration: "75 min",
-    difficulty: "Advanced",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    files: [
-      { name: "Chapter 3 - Implementation Kit.zip", size: "5.8 MB", type: "zip" },
-      { name: "Chapter 3 - Checklist.pdf", size: "0.8 MB", type: "pdf" }
-    ]
-  },
-  {
-    id: 4,
-    title: "Expert Optimization",
-    description: "Reach peak performance with expert-level optimization techniques",
-    duration: "90 min",
-    difficulty: "Expert",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    files: [
-      { name: "Chapter 4 - Expert Strategies.pdf", size: "6.2 MB", type: "pdf" },
-      { name: "Chapter 4 - Bonus Resources.zip", size: "8.4 MB", type: "zip" }
-    ]
-  }
-];
+interface CourseData {
+  name: string;
+  description: string;
+  chapters: Array<{
+    id: number;
+    title: string;
+    videoUrl: string;
+    downloadLinks: string[];
+  }>;
+}
 
 const ChapterPage = () => {
   const { chapterId } = useParams();
   const navigate = useNavigate();
   const [completedChapters, setCompletedChapters] = useState<number[]>([]);
   const [videoWatched, setVideoWatched] = useState(false);
+  const [courseData, setCourseData] = useState<CourseData>({
+    name: "Master Course",
+    description: "Transform your knowledge",
+    chapters: []
+  });
 
   const chapterIdNum = parseInt(chapterId || "1");
-  const chapter = chapters.find(c => c.id === chapterIdNum);
+  const chapter = courseData.chapters.find(c => c.id === chapterIdNum);
 
   useEffect(() => {
     // Check if user is logged in
@@ -72,6 +37,12 @@ const ChapterPage = () => {
     if (!isLoggedIn) {
       navigate("/");
       return;
+    }
+
+    // Load course data
+    const storedData = localStorage.getItem("courseData");
+    if (storedData) {
+      setCourseData(JSON.parse(storedData));
     }
 
     // Load completed chapters
@@ -112,21 +83,20 @@ const ChapterPage = () => {
     }
   };
 
-  const handleDownload = (fileName: string) => {
-    // Simulate file download
-    toast({
-      title: "Download Started",
-      description: `Downloading ${fileName}...`,
-    });
-    
-    // In a real app, you would trigger an actual download here
-    // For demo purposes, we'll just show a toast
-    setTimeout(() => {
+  const handleDownload = (downloadUrl: string, index: number) => {
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank');
       toast({
-        title: "Download Complete",
-        description: `${fileName} has been downloaded.`,
+        title: "Download Started",
+        description: `Opening download link...`,
       });
-    }, 2000);
+    } else {
+      toast({
+        title: "Download Unavailable",
+        description: "This download link has not been configured yet.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isCompleted = completedChapters.includes(chapterIdNum);
@@ -163,8 +133,8 @@ const ChapterPage = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl font-bold">Chapter {chapter.id}</h1>
-                <Badge className={`${getDifficultyColor(chapter.difficulty)} text-white`}>
-                  {chapter.difficulty}
+                <Badge className="bg-primary text-white">
+                  Chapter {chapter.id}
                 </Badge>
                 {isCompleted && (
                   <Badge className="bg-success text-white">
@@ -174,7 +144,7 @@ const ChapterPage = () => {
                 )}
               </div>
               <h2 className="text-xl text-white/90">{chapter.title}</h2>
-              <p className="text-white/70">{chapter.description}</p>
+              <p className="text-white/70">Watch the video and download resources</p>
             </div>
           </div>
         </div>
@@ -186,7 +156,7 @@ const ChapterPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Play className="w-5 h-5" />
-              Chapter Video ({chapter.duration})
+              Chapter Video
             </CardTitle>
             <CardDescription>
               Watch the complete lesson to unlock downloads and mark as complete
@@ -234,33 +204,30 @@ const ChapterPage = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {chapter.files.map((file, index) => {
-                const IconComponent = getFileIcon(file.type);
-                return (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between p-4 border rounded-lg bg-background/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <IconComponent className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">{file.size}</p>
-                      </div>
+              {chapter.downloadLinks.map((downloadUrl, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-between p-4 border rounded-lg bg-background/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-primary" />
                     </div>
-                    <Button 
-                      size="sm"
-                      onClick={() => handleDownload(file.name)}
-                      className="bg-gradient-to-r from-primary to-secondary"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
+                    <div>
+                      <p className="font-medium">Download {index + 1}</p>
+                      <p className="text-sm text-muted-foreground">Resource file</p>
+                    </div>
                   </div>
-                );
-              })}
+                  <Button 
+                    size="sm"
+                    onClick={() => handleDownload(downloadUrl, index)}
+                    className="bg-gradient-to-r from-primary to-secondary"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -278,7 +245,7 @@ const ChapterPage = () => {
           
           <Button 
             onClick={() => {
-              if (chapterIdNum < chapters.length) {
+              if (chapterIdNum < courseData.chapters.length) {
                 const nextChapterUnlocked = completedChapters.includes(chapterIdNum);
                 if (nextChapterUnlocked) {
                   navigate(`/course/chapter/${chapterIdNum + 1}`);
@@ -291,7 +258,7 @@ const ChapterPage = () => {
                 }
               }
             }}
-            disabled={chapterIdNum === chapters.length}
+            disabled={chapterIdNum === courseData.chapters.length}
             className="bg-gradient-to-r from-primary to-secondary"
           >
             Next Chapter

@@ -6,30 +6,60 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Play, LogOut, Award, Lock, CheckCircle } from "lucide-react";
 
-interface CourseData {
-  name: string;
-  description: string;
-  chapters: Array<{
-    id: number;
-    title: string;
-    videoUrl: string;
-    downloadLinks: string[];
-  }>;
-}
+const chapters = [
+  {
+    id: 1,
+    title: "Foundation Principles",
+    description: "Master the core concepts that will transform your understanding",
+    duration: "45 min",
+    difficulty: "Beginner",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Sample video
+    files: [
+      { name: "Chapter 1 - Workbook.pdf", size: "2.4 MB" },
+      { name: "Chapter 1 - Templates.zip", size: "1.2 MB" }
+    ]
+  },
+  {
+    id: 2,
+    title: "Advanced Techniques",
+    description: "Deep dive into professional strategies and methodologies",
+    duration: "60 min",
+    difficulty: "Intermediate",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    files: [
+      { name: "Chapter 2 - Advanced Guide.pdf", size: "3.1 MB" },
+      { name: "Chapter 2 - Case Studies.pdf", size: "4.2 MB" }
+    ]
+  },
+  {
+    id: 3,
+    title: "Implementation Mastery",
+    description: "Put your knowledge into practice with real-world applications",
+    duration: "75 min",
+    difficulty: "Advanced",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    files: [
+      { name: "Chapter 3 - Implementation Kit.zip", size: "5.8 MB" },
+      { name: "Chapter 3 - Checklist.pdf", size: "0.8 MB" }
+    ]
+  },
+  {
+    id: 4,
+    title: "Expert Optimization",
+    description: "Reach peak performance with expert-level optimization techniques",
+    duration: "90 min",
+    difficulty: "Expert",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    files: [
+      { name: "Chapter 4 - Expert Strategies.pdf", size: "6.2 MB" },
+      { name: "Chapter 4 - Bonus Resources.zip", size: "8.4 MB" }
+    ]
+  }
+];
 
 const CoursePage = () => {
   const navigate = useNavigate();
   const [completedChapters, setCompletedChapters] = useState<number[]>([]);
-  const [courseData, setCourseData] = useState<CourseData>({
-    name: "Master Course",
-    description: "Transform your knowledge with our comprehensive course",
-    chapters: [
-      { id: 1, title: "Chapter 1", videoUrl: "", downloadLinks: ["", ""] },
-      { id: 2, title: "Chapter 2", videoUrl: "", downloadLinks: ["", ""] },
-      { id: 3, title: "Chapter 3", videoUrl: "", downloadLinks: ["", ""] },
-      { id: 4, title: "Chapter 4", videoUrl: "", downloadLinks: ["", ""] }
-    ]
-  });
 
   useEffect(() => {
     // Check if user is logged in
@@ -37,12 +67,6 @@ const CoursePage = () => {
     if (!isLoggedIn) {
       navigate("/");
       return;
-    }
-
-    // Load course data
-    const storedData = localStorage.getItem("courseData");
-    if (storedData) {
-      setCourseData(JSON.parse(storedData));
     }
 
     // Load completed chapters
@@ -68,7 +92,7 @@ const CoursePage = () => {
     }
   };
 
-  const progressPercentage = (completedChapters.length / courseData.chapters.length) * 100;
+  const progressPercentage = (completedChapters.length / chapters.length) * 100;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -91,8 +115,8 @@ const CoursePage = () => {
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{courseData.name}</h1>
-                <p className="text-white/80">{courseData.description}</p>
+                <h1 className="text-2xl font-bold">Master Course Dashboard</h1>
+                <p className="text-white/80">Your journey to expertise starts here</p>
               </div>
             </div>
             <Button variant="outline" onClick={handleLogout} className="text-white border-white/30 hover:bg-white/10">
@@ -114,7 +138,7 @@ const CoursePage = () => {
                   Course Progress
                 </CardTitle>
                 <CardDescription>
-                  {completedChapters.length} of {courseData.chapters.length} chapters completed
+                  {completedChapters.length} of {chapters.length} chapters completed
                 </CardDescription>
               </div>
               <Badge className="bg-accent text-accent-foreground">
@@ -129,7 +153,7 @@ const CoursePage = () => {
 
         {/* Chapters Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {courseData.chapters.map((chapter) => {
+          {chapters.map((chapter) => {
             const isCompleted = completedChapters.includes(chapter.id);
             const isUnlocked = chapter.id === 1 || completedChapters.includes(chapter.id - 1);
             
@@ -159,23 +183,25 @@ const CoursePage = () => {
                         <CardTitle className="text-lg">
                           Chapter {chapter.id}
                         </CardTitle>
-                         <CardDescription className="text-sm">
-                           Video Available
-                         </CardDescription>
+                        <CardDescription className="text-sm">
+                          {chapter.duration}
+                        </CardDescription>
                       </div>
                     </div>
-                    <Badge className="bg-primary text-white">
-                      Chapter {chapter.id}
+                    <Badge 
+                      className={`${getDifficultyColor(chapter.difficulty)} text-white`}
+                    >
+                      {chapter.difficulty}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <h3 className="font-semibold text-lg mb-2">{chapter.title}</h3>
-                  <p className="text-muted-foreground mb-4">Watch the video and download resources</p>
+                  <p className="text-muted-foreground mb-4">{chapter.description}</p>
                   
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                      2 downloadable files
+                      {chapter.files.length} downloadable files
                     </div>
                     {isCompleted && (
                       <Badge variant="outline" className="text-success border-success">

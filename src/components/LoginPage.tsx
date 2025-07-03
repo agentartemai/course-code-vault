@@ -23,11 +23,11 @@ const LoginPage = () => {
       if (codeExists.used) {
         toast({
           title: "Code Already Used",
-          description: "This access code has already been used and cannot be used again.",
+          description: "This access code has already been used.",
           variant: "destructive",
         });
       } else {
-        // Mark code as used permanently
+        // Mark code as used
         const updatedCodes = storedCodes.map((code: any) => 
           code.code === accessCode ? { ...code, used: true, usedAt: new Date().toISOString() } : code
         );
@@ -62,7 +62,7 @@ const LoginPage = () => {
             <BookOpen className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Course Access
+            Master Course
           </h1>
           <p className="text-muted-foreground mt-2">
             Enter your exclusive access code to unlock premium content
